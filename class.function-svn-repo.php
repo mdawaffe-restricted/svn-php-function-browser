@@ -177,6 +177,12 @@ class Function_SVN_Repo {
 				}
 				$function_content .= $token;
 			} else {
+				switch ( $token[0] ) {
+				case T_CURLY_OPEN :
+				case T_DOLLAR_OPEN_CURLY_BRACES :
+				case T_STRING_VARNAME :
+					$brace++;
+				}
 				$function_content .= $token[1];
 			}
 			if ( $braced && !$brace )
