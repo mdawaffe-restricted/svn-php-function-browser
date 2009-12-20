@@ -41,7 +41,6 @@ if ( isset( $argv[1] ) && in_array( $argv[1], array( 'help', '?', 'h' ) ) ) {
 		echo "	-v | --verbose		: Displays extra information.\n"; // What?
 		echo "	--incremental		: give output suitable for concatenation\n";
 		echo "	--xml			: output in XML\n";
-		die( "not implemented\n" );
 		break;
 	case 'cat' :
 		echo "cat: Output the content of specified function.\n";
@@ -121,7 +120,11 @@ case 'ann' :
 case 'annotate' :
 case 'blame' :
 case 'praise' :
-	die( 'not implemented' );
+	$options = getopts( array(
+		'revision' => array( 'switch' => array( 'r', 'revision' ), 'type' => GETOPT_VAL, 'default' => 'HEAD' )
+	) );
+
+	echo $repo->blame( $function, $options['revision'] );
 	break;
 case 'cat' :
 	$options = getopts( array(

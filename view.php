@@ -15,12 +15,13 @@
 <script type="text/javascript">
 jQuery( function($) {
 	$( 'select[name=view]' ).change( function() {
-		if ( 'display' == $(this).val() ) {
-			$( '#compare-old' ).hide().find( 'input' ).attr( 'disabled', true );
-			$( '#view-punctuation' ).text( '@' );
-		} else {
+		var v = $(this).val();
+		if ( 'compare' == v ) {
 			$( '#compare-old' ).show().find( 'input' ).attr( 'disabled', false );
 			$( '#view-punctuation' ).text( '+' );
+		} else {
+			$( '#compare-old' ).hide().find( 'input' ).attr( 'disabled', true );
+			$( '#view-punctuation' ).text( '@' );
 		}
 	} ).change();
 	SyntaxHighlighter.all();
@@ -144,7 +145,7 @@ article nav a[href=""] {
 	<nav>
 		<form method="post" action="">
 			<select name="view">
-<?php foreach ( array( 'display', 'compare' ) as $view ) : ?>
+<?php foreach ( array( 'display', 'compare', 'blame' ) as $view ) : ?>
 				<option value="<?php echo esc_attr( $view ); ?>"<?php if ( $view == get_view() ) echo ' selected="selected"'; ?>><?php echo esc_html( ucfirst( $view ) ); ?></option>
 <?php endforeach; ?>
 			</select>

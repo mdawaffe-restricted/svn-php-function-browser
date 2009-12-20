@@ -9,6 +9,7 @@ class Function_SVN_Repo {
 	var $rev_fs = array();
 
 	var $last_file = null; // Holds path to file in which the function was most recently found
+	var $last_line = null; // Holds line number of the start of the function most recently found
 
 	function __construct( $repo_root, $repo_path ) {
 		if ( !$this->repo = svn_repos_open( $repo_root ) )
@@ -50,6 +51,7 @@ class Function_SVN_Repo {
 			return false;
 
 		$current_log['function_file'] = $this->last_file;
+		$current_log['function_line'] = $this->last_line;
 		$current_log['function_content'] = $function_content;
 
 		if ( !$previous_log ) { // Could be that it's in a different file that svn_log() didn't catch, or could be outside of peg_revision
@@ -63,6 +65,7 @@ class Function_SVN_Repo {
 		// $current_log: Loop through previous revisions to find the earliest one with this $function_content
 		while ( $function_content == $previous_content = $this->cat( $function, $previous_log['rev'] ) ) {
 			$previous_log['function_file'] = $this->last_file;
+			$previous_log['function_line'] = $this->last_line;
 			$current_log = $previous_log;
 			@list( $previous_log ) = self::svn_log( "file://{$this->repo_root}{$this->last_file}", $previous_log['rev'] - 1, SVN_REVISION_INITIAL, 1, SVN_DISCOVER_CHANGED_PATHS );
 			if ( !$previous_log )
@@ -84,6 +87,7 @@ class Function_SVN_Repo {
 			if ( !$from_log['function_content'] = $this->cat( $function, $from_log['rev'] ) )
 				return false;
 			$from_log['function_file'] = $this->last_file;
+			$from_log['function_line'] = $this->last_line;
 		}
 
 		$to_log = $this->log( $to_revision, $function, $look_back );
@@ -91,6 +95,7 @@ class Function_SVN_Repo {
 			if ( !$to_log['function_content'] = $this->cat( $function, $to_log['rev'] ) )
 				return false;
 			$to_log['function_file'] = $this->last_file;
+			$to_log['function_line'] = $this->last_line;
 		}
 
 		return $this->diff_logs( $function, $from_log, $to_log );
@@ -136,6 +141,35 @@ class Function_SVN_Repo {
 		}
 	}
 
+	function blame( $function, $revision ) {
+		if ( !$function = validate_function_name( $function ) )
+			return false;
+
+		if ( !$log = $this->log( $revision, $function, true ) )
+			return false;
+
+		return $this->blame_log( $function, $log );
+	}
+
+	function blame_log( $function, $log ) {
+		$blame_lines = svn_blame( "file://$this->repo_root{$log['function_file']}", $log['rev'] );
+		$blame_lines = array_slice( $blame_lines, $log['function_line'], preg_match_all( '/(?:\r\n|\n|\r)/', $log['function_content'], $match ) + 1 );
+
+		$blame = '';
+		$rev_len = $author_len = 0;
+		foreach ( $blame_lines as $blame_line ) {
+			if ( $rev_len < $len = strlen( $blame_line['rev'] ) )
+				$rev_len = $len;
+			if ( $author_len < $len = strlen( $blame_line['author'] ) )
+				$author_len = $len;
+		}
+
+		foreach ( $blame_lines as $blame_line )
+			$blame .= str_pad( $blame_line['rev'], $rev_len, ' ', STR_PAD_LEFT ) . ' ' . str_pad( $blame_line['author'], $author_len ) . "\t{$blame_line['line']}\n";
+
+		return $blame;
+	}
+
 	// @return false not found, (string) function body.
 	function find_function_in_file( $function, $revision, $file ) {
 		$rev_fs = $this->get_revision( $revision );
@@ -153,6 +187,8 @@ class Function_SVN_Repo {
 			return false;
 		if ( !$file_contents = substr( $file_contents, $match[0][1] ) )
 			return false;
+
+		$this->last_line = preg_match_all( '/(?:\r\n|\n|\r)/', substr( $file_contents, 0, $match[0][1] ), $match ) + 1;
 
 		return $this->find_function_in_file_contents( $function, $file_contents );
 	}

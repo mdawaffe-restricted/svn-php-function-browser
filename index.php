@@ -20,6 +20,9 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 			$url .= "$head/$_POST[old_revision]";
 		elseif ( 'prev' == strtolower( $_POST['old_revision'] ) )
 			$url .= "$head/prev";
+		elseif ( 'blame' == strtolower( $_POST['view'] ) )
+			$url .= "$head/blame";
+
 		header( 'Location: ' . clean_url( $url ) );
 		exit;
 	}
@@ -40,10 +43,21 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 		$old_revision = (int) $old_revision;
 	elseif ( 'prev' == strtolower( $old_revision ) )
 		$old_revision = 'prev';
+	elseif ( 'blame' == strtolower( $old_revision ) )
+		$old_revision = 'blame';
 	else
 		$old_revision = false;
 
-	$view = $old_revision ? 'compare' : 'display';
+	switch ( $old_revision ) {
+	case false :
+		$view = 'display';
+		break;
+	case 'blame' :
+		$view = 'blame';
+		break;
+	default :
+		$view = 'compare';
+	}
 }
 
 // Handle AJAX
