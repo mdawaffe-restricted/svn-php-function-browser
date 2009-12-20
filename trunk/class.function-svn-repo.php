@@ -185,12 +185,12 @@ class Function_SVN_Repo {
 		$_function = preg_quote( $function, '/' );
 		if ( !preg_match( "/function\s+&?$_function\s*\(/", $file_contents, $match, PREG_OFFSET_CAPTURE ) ) // Could b0rk.  Should technically use tokenizer
 			return false;
-		if ( !$file_contents = substr( $file_contents, $match[0][1] ) )
+		if ( !$file_contents_tail = substr( $file_contents, $match[0][1] ) )
 			return false;
 
-		$this->last_line = preg_match_all( '/(?:\r\n|\n|\r)/', substr( $file_contents, 0, $match[0][1] ), $match ) + 1;
+		$this->last_line = preg_match_all( '/(?:\r\n|\n|\r)/', substr( $file_contents, 0, $match[0][1] ), $match );
 
-		return $this->find_function_in_file_contents( $function, $file_contents );
+		return $this->find_function_in_file_contents( $function, $file_contents_tail );
 	}
 
 	// @return (string) function body.  Uses Tokenizer for accuracy: counts braces.

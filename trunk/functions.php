@@ -153,11 +153,11 @@ function display_function( $function = null ) {
 <?php
 	$view = get_view();
 	if ( !$previous_log )
-		$view = 'display';
+		$view = 'cat';
 
 
 	switch ( $view ) {
-	case 'display' : ?>
+	case 'cat' : ?>
 
 	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $current_log['function_content'], ENT_NOQUOTES ); ?></pre>
 <?php

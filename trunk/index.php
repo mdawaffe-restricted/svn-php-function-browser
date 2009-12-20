@@ -50,13 +50,13 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 
 	switch ( $old_revision ) {
 	case false :
-		$view = 'display';
+		$view = 'cat';
 		break;
 	case 'blame' :
 		$view = 'blame';
 		break;
 	default :
-		$view = 'compare';
+		$view = 'diff';
 	}
 }
 
