@@ -16,7 +16,7 @@
 jQuery( function($) {
 	$( 'select[name=view]' ).change( function() {
 		var v = $(this).val();
-		if ( 'compare' == v ) {
+		if ( 'diff' == v ) {
 			$( '#compare-old' ).show().find( 'input' ).attr( 'disabled', false );
 			$( '#view-punctuation' ).text( '+' );
 		} else {
@@ -145,8 +145,8 @@ article nav a[href=""] {
 	<nav>
 		<form method="post" action="">
 			<select name="view">
-<?php foreach ( array( 'display', 'compare', 'blame' ) as $view ) : ?>
-				<option value="<?php echo esc_attr( $view ); ?>"<?php if ( $view == get_view() ) echo ' selected="selected"'; ?>><?php echo esc_html( ucfirst( $view ) ); ?></option>
+<?php foreach ( array( 'cat' => 'Display', 'diff' => 'Compare', 'blame' => 'Annotate' ) as $view => $label ) : ?>
+				<option value="<?php echo esc_attr( $view ); ?>"<?php if ( $view == get_view() ) echo ' selected="selected"'; ?>><?php echo esc_html( $label ); ?></option>
 <?php endforeach; ?>
 			</select>
 			<input type="text" name="function" value="<?php echo esc_attr( get_function_name() ); ?>" />
