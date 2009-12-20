@@ -79,18 +79,27 @@ function display_function( $function = null ) {
 	// $previous_log: Find the earliest revision with the previous version of the function.  Get its svn log.
 	$previous_log = $repo->log( $current_log['rev'] - 1, $function, true );
 
-	if ( $old_revision = get_old_revision() ) {
-		// 'prev' => we want the most recent previous version of the function
-		// (int) => we want a particular previous version of the function
-		if ( $previous_log && 'prev' != $old_revision && $previous_log['rev'] != $old_revision ) {
-			// This particular version of the function
-			$previous_log = $repo->log( $old_revision, $function, true );
-		}
+	$needs_old = true;
 
-		if ( !$previous_log ) {
-			$error = 'This revision is the first containing this function.';
-			$old_revision = false;
+	switch ( $old_revision = get_old_revision() ) {
+	case 'prev' : // 'prev' => we want the most recent previous version of the function
+		break;
+	case 'blame' :
+		$blame = $repo->blame_log( $function, $current_log );
+		break;
+	case false :
+		$needs_old = false;
+		break;
+	default : // (int) => we want a particular previous version of the function
+		if ( $previous_log['rev'] != $old_revision ) {
+			// This particular version of the function
+			$previous_log = $repo->log( $old_revision, $function );
 		}
+	}
+
+	if ( $needs_old && !$previous_log ) {
+		$error = 'This revision is the first containing this function.';
+		$old_revision = false;
 	}
 
 	// Build the URL for the "previous" button.
@@ -141,13 +150,30 @@ function display_function( $function = null ) {
 		<address class="hcard"><span class="fn nickname"><?php echo esc_html( $current_log['author'] ); ?></span></address>
 	</header>
 
-<?php	if ( !$previous_log || 'display' == get_view() ) : // we've viewing the functon ?>
+<?php
+	$view = get_view();
+	if ( !$previous_log )
+		$view = 'display';
+
+
+	switch ( $view ) {
+	case 'display' : ?>
 
 	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $current_log['function_content'], ENT_NOQUOTES ); ?></pre>
-<?php	else : // we're viewing the diff ?>
+<?php
+		break;
+	case 'diff' : ?>
 
 	<pre class="brush: diff; wrap-lines: false;"><?php echo htmlspecialchars( $repo->diff_logs( $function, $previous_log, $current_log ) ); ?></pre>
-<?php	endif;
+<?php
+		break;
+	case 'blame' : ?>
+
+	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $blame, ENT_NOQUOTES ); ?></pre>
+
+<?php
+		break;
+	}
 }
 
 // Generates the URL for the "next" button.  Expensive.
