@@ -8,6 +8,8 @@ class Function_SVN_Repo {
 	var $fs = null;
 	var $rev_fs = array();
 
+	var $function_regex = '/function\s+&?%s\s*\(/';
+
 	var $last_file = null; // Holds path to file in which the function was most recently found
 	var $last_line = null; // Holds line number of the start of the function most recently found
 
@@ -170,6 +172,24 @@ class Function_SVN_Repo {
 		return $blame;
 	}
 
+	function ls( $path, $revision ) {
+		$rev_fs = $this->get_revision( $revision );
+
+		if ( SVN_NODE_FILE != svn_fs_check_path( $rev_fs, $path ) )
+			return false;
+
+		if ( !$f = svn_fs_file_contents( $rev_fs, $path ) )
+			return false;
+
+		$file_contents = stream_get_contents( $f ); // can be more efficient.  Could use stream filter?
+		fclose( $f ); // Is there a better function to close a stream?
+
+		if ( !preg_match_all( sprintf( $this->function_regex, '(\S+)' ), $file_contents, $matches ) )
+			return false;
+
+		return join( "\n", $matches[1] );
+	}
+
 	// @return false not found, (string) function body.
 	function find_function_in_file( $function, $revision, $file ) {
 		$rev_fs = $this->get_revision( $revision );
@@ -182,8 +202,7 @@ class Function_SVN_Repo {
 		$file_contents = stream_get_contents( $f ); // can be more efficient.  Could use stream filter?
 		fclose( $f ); // Is there a better function to close a stream?
 
-		$_function = preg_quote( $function, '/' );
-		if ( !preg_match( "/function\s+&?$_function\s*\(/", $file_contents, $match, PREG_OFFSET_CAPTURE ) ) // Could b0rk.  Should technically use tokenizer
+		if ( !preg_match( sprintf( $this->function_regex, preg_quote( $function, '/' ) ), $file_contents, $match, PREG_OFFSET_CAPTURE ) ) // Could b0rk.  Should technically use tokenizer
 			return false;
 		if ( !$file_contents_tail = substr( $file_contents, $match[0][1] ) )
 			return false;

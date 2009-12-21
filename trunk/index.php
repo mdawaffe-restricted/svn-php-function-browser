@@ -9,6 +9,7 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 	$function = $_POST['function'];
 	$url = FUNC_SVN_APP_URL;
 	if ( is_valid_function_name( $function ) ) {
+		$function = rawurlencode( $function );
 		$url .= "/$function";
 		$head = '';
 		if ( ctype_digit( $_POST['revision'] ) )
@@ -22,6 +23,8 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 			$url .= "$head/prev";
 		elseif ( 'blame' == strtolower( $_POST['view'] ) )
 			$url .= "$head/blame";
+		elseif ( 'list' == strtolower( $_POST['view'] ) )
+			$url .= "$head/list";
 
 		header( 'Location: ' . clean_url( $url ) );
 		exit;
@@ -31,6 +34,8 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 	$rel = trim( substr( $_SERVER['REQUEST_URI'], strlen( $app_path ) ), '/' );
 	list( $rel ) = explode( '?', $rel );
 	@list( $function, $revision, $old_revision ) = explode( '/', $rel );
+
+	$function = urldecode( $function );
 
 	unset( $app_path, $rel );
 	if ( !is_valid_function_name( $function ) )
@@ -45,6 +50,8 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 		$old_revision = 'prev';
 	elseif ( 'blame' == strtolower( $old_revision ) )
 		$old_revision = 'blame';
+	elseif ( 'list' == strtolower( $old_revision ) )
+		$old_revision = 'list';
 	else
 		$old_revision = false;
 
@@ -53,7 +60,8 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 		$view = 'cat';
 		break;
 	case 'blame' :
-		$view = 'blame';
+	case 'list' :
+		$view = $old_revision;
 		break;
 	default :
 		$view = 'diff';
