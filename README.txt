@@ -29,7 +29,8 @@ tags, trunk or other repositories.
 CLI: `php svn-function.php command arguments`.
      See `php svn-function.php help` for more information.
 
-Web: Just browse to URL at which you installed the script.
+Web: Just browse to URL at which you installed the script.  To use List on many hosts,
+     you'll need to set [AllowEncodedSlashes On][3].  Lame.
 
 = Requirements =
 1. PHP >= 5.2.0
@@ -58,11 +59,12 @@ The following constants must be defined for the Web interface to work:
 :	E.g. `/trunk`
 
 `FUNC_SVN_TRAC_URL` (optional)
-:	Absolute URL to the [Trac][3] instance set up for the repository.
+:	Absolute URL to the [Trac][4] instance set up for the repository.
 	No trailing slash.
 :	E.g. `http://core.trac.wordpress.org`
 
 
 [1]: http://subversion.tigris.org/
 [2]: http://svnbook.red-bean.com/en/1.5/svn.reposadmin.maint.html#svn.reposadmin.maint.tk.svnsync "svnsync documentation"
-[3]: http://trac.edgewall.org/
+[3]: http://httpd.apache.org/docs/2.2/mod/core.html#allowencodedslashes
+[4]: http://trac.edgewall.org/

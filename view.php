@@ -110,6 +110,12 @@ section h1 {
 p, address, pre {
 	margin: 1em 0;
 }
+ul {
+	margin: 0 0 0 1em;
+	padding: 0;
+	text-indent: 0;
+	list-style: none;
+}
 .error {
 	-moz-border-radius: 3px;
 	border-radius: 3px;
@@ -145,7 +151,7 @@ article nav a[href=""] {
 	<nav>
 		<form method="post" action="">
 			<select name="view">
-<?php foreach ( array( 'cat' => 'Display', 'diff' => 'Compare', 'blame' => 'Annotate' ) as $view => $label ) : ?>
+<?php foreach ( array( 'cat' => 'Display', 'diff' => 'Compare', 'blame' => 'Annotate', 'list' => 'List' ) as $view => $label ) : ?>
 				<option value="<?php echo esc_attr( $view ); ?>"<?php if ( $view == get_view() ) echo ' selected="selected"'; ?>><?php echo esc_html( $label ); ?></option>
 <?php endforeach; ?>
 			</select>
@@ -163,7 +169,7 @@ article nav a[href=""] {
 
 <section>
 	<article>
-	<?php display_function(); ?>
+	<?php if ( 'list' == get_view() ) display_file(); else display_function(); ?>
 	</article>
 </section>
 

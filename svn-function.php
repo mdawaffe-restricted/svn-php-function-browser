@@ -90,7 +90,6 @@ if ( isset( $argv[1] ) && in_array( $argv[1], array( 'help', '?', 'h' ) ) ) {
 		echo "				  Date and time of the last commit\n";
 		echo "	--incremental		: give output suitable for concatenation\n";
 		echo "	--xml			: output in XML\n";
-		die( "not implemented\n" );
 		break;
 	default :
 		die( $help );
@@ -101,19 +100,24 @@ if ( isset( $argv[1] ) && in_array( $argv[1], array( 'help', '?', 'h' ) ) ) {
 if ( empty( $argc ) || $argc < 4 )
 	die( $help );
 
-$last_sl = strrpos( $argv[3], '/' );
-if ( false == $last_sl ) {
-	$function = $argv[3];
-	$path = '/trunk';
+if ( 'list' == $argv[1] ) {
+	$file = $argv[3];
 } else {
-	$function = substr( $argv[3], $last_sl + 1);
-	$path = substr( $argv[3], 0, $last_sl );
+	$last_sl = strrpos( $argv[3], '/' );
+	if ( false == $last_sl ) {
+		$function = $argv[3];
+		$path = '/trunk';
+	} else {
+		$function = substr( $argv[3], $last_sl + 1);
+		$path = substr( $argv[3], 0, $last_sl );
+	}
+	unset( $last_sl );
+
+	if ( !$function = validate_function_name( $function ) )
+		trigger_error( 'Invalid function', E_USER_ERROR );
 }
 
 $repo = new Function_SVN_Repo( $argv[2], $path );
-
-if ( !$function = validate_function_name( $function ) )
-	trigger_error( 'Invalid function', E_USER_ERROR );
 
 switch ( $argv[1] ) {
 case 'ann' :
@@ -173,7 +177,12 @@ case 'info' :
 	break;
 case 'list' :
 case 'ls' :
-	die( 'not implemented' );
+	$options = getopts( array(
+		'revision' => array( 'switch' => array( 'r', 'revision' ), 'type' => GETOPT_VAL, 'default' => 'HEAD' )
+	) );
+
+	echo $repo->ls( $file, $options['revision'] );
+	echo "\n";
 	break;
 default :
 	die( $help );

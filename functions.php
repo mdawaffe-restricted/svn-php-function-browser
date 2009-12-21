@@ -59,6 +59,28 @@ function _trac_url_ticket( $match ) {
 
 /* Views */
 
+function display_file( $file = null ) {
+	$file = get_function_name();
+	$revision = get_revision();
+
+	$repo = new Function_SVN_Repo( FUNC_SVN_REPO_ROOT, FUNC_SVN_REPO_PATH );
+	if ( !$list = $repo->ls( FUNC_SVN_REPO_PATH . "/$file", $revision ) )
+		return false;
+	$list_array = explode( "\n", $list );
+?>
+
+	<h1><?php printf( 'Functions in %s', esc_html( $file ) ); ?></h1>
+
+	<ul>
+<?php	foreach ( $list_array as $list_item ) : ?>
+
+		<li><a href="<?php echo clean_url( FUNC_SVN_APP_URL . "/$list_item" . ( SVN_REVISION_HEAD == $revision ? '' : "/$revision" ) ); ?>"><?php echo esc_html( $list_item ); ?></a></li>
+<?php	endforeach; ?>
+
+	</ul>
+<?php
+}
+
 // Instead of just doing ->cat() and ->diff() here, we go through some hoops to get the previous url, logs etc.
 // Could probably move to ->cat() and ->diff() if we stored or cached logs
 function display_function( $function = null ) {
