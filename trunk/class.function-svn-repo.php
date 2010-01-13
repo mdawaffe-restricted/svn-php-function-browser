@@ -190,6 +190,11 @@ class Function_SVN_Repo {
 		return join( "\n", $matches[1] );
 	}
 
+	function split_docs_from_function( $function, $function_contents ) {
+		preg_match( sprintf( $this->function_regex, preg_quote( $function, '/' ) ), $function_contents, $match, PREG_OFFSET_CAPTURE );
+		return array( substr( $function_contents, 0, $match[0][1] ), substr( $function_contents, $match[0][1] ) );
+	}
+
 	// @return false not found, (string) function body.
 	function find_function_in_file( $function, $revision, $file ) {
 		$rev_fs = $this->get_revision( $revision );
@@ -204,12 +209,24 @@ class Function_SVN_Repo {
 
 		if ( !preg_match( sprintf( $this->function_regex, preg_quote( $function, '/' ) ), $file_contents, $match, PREG_OFFSET_CAPTURE ) ) // Could b0rk.  Should technically use tokenizer
 			return false;
+
+		$file_contents_head = substr( $file_contents, 0, $match[0][1] );
+
+		$function_comments = '';		
+
+		$block = false;
+
+		while ( preg_match( '#^\s*//.*$\s*\z#m', $file_contents_head, $comment_match, PREG_OFFSET_CAPTURE ) || ( !$block && $block = preg_match( '#^\s*/\*(?:[^*]|\*(?!/))*\*/$\s*\z#m', $file_contents_head, $comment_match, PREG_OFFSET_CAPTURE ) ) ) {
+			$function_comments = $comment_match[0][0] . $function_comments;
+			$file_contents_head = substr( $file_contents_head, 0, $comment_match[0][1] );
+		}
+
 		if ( !$file_contents_tail = substr( $file_contents, $match[0][1] ) )
 			return false;
 
-		$this->last_line = preg_match_all( '/(?:\r\n|\n|\r)/', substr( $file_contents, 0, $match[0][1] ), $match );
+		$this->last_line = preg_match_all( '/(?:\r\n|\n|\r)/', substr( $file_contents, 0, $match[0][1] ), $match ) - preg_match_all( '/(?:\r\n|\n|\r)/', $function_comments, $match ) + 1;
 
-		return $this->find_function_in_file_contents( $function, $file_contents_tail );
+		return $this->find_function_in_file_contents( $function, ltrim( $function_comments, "\n" ) . $file_contents_tail );
 	}
 
 	// @return (string) function body.  Uses Tokenizer for accuracy: counts braces.
