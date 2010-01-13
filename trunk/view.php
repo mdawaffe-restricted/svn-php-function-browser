@@ -24,7 +24,6 @@ jQuery( function($) {
 			$( '#view-punctuation' ).text( '@' );
 		}
 	} ).change();
-	SyntaxHighlighter.config.strings.expandSource = 'Documentation';
 	SyntaxHighlighter.all();
 	$.post( document.location.hre, { next_url: 1 }, function( response, status ) {
 		if ( 'success' != status ) {
