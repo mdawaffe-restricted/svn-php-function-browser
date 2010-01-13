@@ -24,6 +24,7 @@ jQuery( function($) {
 			$( '#view-punctuation' ).text( '@' );
 		}
 	} ).change();
+	SyntaxHighlighter.config.strings.expandSource = 'Documentation';
 	SyntaxHighlighter.all();
 	$.post( document.location.hre, { next_url: 1 }, function( response, status ) {
 		if ( 'success' != status ) {
@@ -31,10 +32,17 @@ jQuery( function($) {
 		}
 		$( '#change-next' ).attr( 'href', response );
 	}, 'text' );
+	$( '.doc-link a' ).click( function() {
+		$( '.documentation' ).slideToggle();
+		return false;
+	} );
 } );
 </script>
 
 <style type="text/css">
+header, section, article, nav {
+	display: block;
+}
 body {
 	margin: 0;
 	padding: 0;
@@ -108,7 +116,13 @@ section h1 {
 	display: block;
 }
 p, address, pre {
-	margin: 1em 0;
+	margin: 1em 0 0;
+}
+address {
+	float: left;
+}
+p.doc-link {
+	float: right;
 }
 ul {
 	margin: 0 0 0 1em;
@@ -139,6 +153,23 @@ article nav a[href=""] {
 }
 #change-next {
 	right: -.3em;
+}
+.documentation {
+	display: none;
+	margin: 1em 0 0;
+	background-color: #d3e7f8;
+	background-color: #eee;
+	padding: .5em;
+}
+header:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.syntaxhighlighter {
+	width: 100% !important;
 }
 </style>
 

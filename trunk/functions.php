@@ -154,6 +154,14 @@ function display_function( $function = null ) {
 	} else {
 		$header_format = 'Revision %1$s @ <time datetime="%2$s">%3$s</time>';
 	}
+
+	$view = get_view();
+	if ( !$previous_log )
+		$view = 'cat';
+
+	list( $docs, $function_content ) = $repo->split_docs_from_function( $function, $current_log['function_content'] );
+	$doc_lines = preg_match_all( '/(?:\r\n|\n|\r)/', $docs, $match );
+
 ?>
 
 	<nav>
@@ -170,32 +178,70 @@ function display_function( $function = null ) {
 <?php		endif; ?>
 		<p><?php echo trac_urls( $current_log['msg'] ); ?></p>
 		<address class="hcard"><span class="fn nickname"><?php echo esc_html( $current_log['author'] ); ?></span></address>
+<?php		if ( 'cat' == $view && $docs ) : ?>
+		<p class="doc-link"><a href="#">Documentation</a></p>
+<?php		endif; ?>
 	</header>
 
 <?php
-	$view = get_view();
-	if ( !$previous_log )
-		$view = 'cat';
 
+	if ( 'cat' == $view && $docs ) {
+		echo "\t<section class='documentation'>\n";
+		display_docs( $docs );
+		echo "\n\t</section>\n";
+	}
+
+	echo "\t<section class='content'>\n";
 
 	switch ( $view ) {
-	case 'cat' : ?>
+	case 'cat' :
+?>
 
-	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $current_log['function_content'], ENT_NOQUOTES ); ?></pre>
+	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $function_content, ENT_NOQUOTES ); ?></pre>
 <?php
 		break;
 	case 'diff' : ?>
 
-	<pre class="brush: diff; wrap-lines: false;"><?php echo htmlspecialchars( $repo->diff_logs( $function, $previous_log, $current_log ) ); ?></pre>
+	<pre class="brush: diff; wrap-lines: false; gutter: false;"><?php echo htmlspecialchars( $repo->diff_logs( $function, $previous_log, $current_log ) ); ?></pre>
 <?php
 		break;
 	case 'blame' : ?>
 
-	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $blame, ENT_NOQUOTES ); ?></pre>
+	<pre class="brush: php; wrap-lines: false; first-line: <?php echo -1 * $doc_lines + 1; ?>"><?php echo htmlspecialchars( $blame, ENT_NOQUOTES ); ?></pre>
 
 <?php
 		break;
 	}
+
+	echo "\t</section>\n";
+}
+
+function display_docs( $docs ) {
+	$docs = preg_replace( array( '#^\s*/\*+#', '#\*+/\s*$#', '#^\s*\*+[ \t]*#m', '#^[ \t]*+#m', '#^\s*//+[ \t]*#m' ), '', $docs );
+
+/*
+	preg_match_all( '#^@(\S+)\s+(.*)$#m', $docs, $at_matches );
+
+	$docs = preg_replace( '#(?:\r\n|\n|\r)#', "\n", $docs );
+
+	$ats = array();
+
+	foreach ( $at_matches[0] as $k => $at_match ) {
+		$ats[$at_matches[1][$k]] = $at_matches[2][$k];
+		$docs = preg_replace( '#^' . preg_quote( $at_match, '#' ) . '$#m', '', $docs );
+	}
+*/
+
+
+//      $docs = preg_replace( '#<<([^>\s]+)(\s*/)?' . '>>#e', '"&lt;\\1" . preg_replace( "#\s+#", "&nbsp;", "\\2" ) . "&gt;"', $docs );
+	$docs = preg_replace( '#\n\n+#', "\n\n", $docs );
+//	$docs = preg_replace( '#(?<!\n)\n(?!\n)#', ' ', $docs );
+	$docs = trim( $docs );
+
+//	echo '<pre class="brush: php;">' . wp_kses( $docs, array( 'strong' => true, 'em' => true, 'a' => array( 'href' => true ), 'i' => true, 'b' => true, 'code' => true, 'p' => true ) ) . '</pre>';
+//	echo '<pre class="brush: html; gutter: false; collapse: true;">' . htmlspecialchars( $docs, ENT_QUOTES ) . '</pre>';
+//	echo '<pre class="documentation">' . htmlspecialchars( $docs, ENT_QUOTES ) . '</pre>';
+	echo nl2br( htmlspecialchars( $docs, ENT_QUOTES ) );
 }
 
 // Generates the URL for the "next" button.  Expensive.
