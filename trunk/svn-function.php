@@ -22,6 +22,8 @@ A {function} is a PHP function name optionally prefaced with a relative path.
 If a path is given, that path will be recursively searched for that function.
 If none is given, the search path defaults to "trunk/".
 
+EXAMPLE: php $argv[0] cat {repo} {function}
+
 
 EOH;
 
