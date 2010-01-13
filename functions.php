@@ -194,8 +194,7 @@ function display_function( $function = null ) {
 	echo "\t<section class='content'>\n";
 
 	switch ( $view ) {
-	case 'cat' :
-?>
+	case 'cat' : ?>
 
 	<pre class="brush: php; wrap-lines: false;"><?php echo htmlspecialchars( $function_content, ENT_NOQUOTES ); ?></pre>
 <?php
@@ -219,28 +218,11 @@ function display_function( $function = null ) {
 function display_docs( $docs ) {
 	$docs = preg_replace( array( '#^\s*/\*+#', '#\*+/\s*$#', '#^\s*\*+[ \t]*#m', '#^[ \t]*+#m', '#^\s*//+[ \t]*#m' ), '', $docs );
 
-/*
-	preg_match_all( '#^@(\S+)\s+(.*)$#m', $docs, $at_matches );
-
 	$docs = preg_replace( '#(?:\r\n|\n|\r)#', "\n", $docs );
 
-	$ats = array();
-
-	foreach ( $at_matches[0] as $k => $at_match ) {
-		$ats[$at_matches[1][$k]] = $at_matches[2][$k];
-		$docs = preg_replace( '#^' . preg_quote( $at_match, '#' ) . '$#m', '', $docs );
-	}
-*/
-
-
-//      $docs = preg_replace( '#<<([^>\s]+)(\s*/)?' . '>>#e', '"&lt;\\1" . preg_replace( "#\s+#", "&nbsp;", "\\2" ) . "&gt;"', $docs );
 	$docs = preg_replace( '#\n\n+#', "\n\n", $docs );
-//	$docs = preg_replace( '#(?<!\n)\n(?!\n)#', ' ', $docs );
 	$docs = trim( $docs );
 
-//	echo '<pre class="brush: php;">' . wp_kses( $docs, array( 'strong' => true, 'em' => true, 'a' => array( 'href' => true ), 'i' => true, 'b' => true, 'code' => true, 'p' => true ) ) . '</pre>';
-//	echo '<pre class="brush: html; gutter: false; collapse: true;">' . htmlspecialchars( $docs, ENT_QUOTES ) . '</pre>';
-//	echo '<pre class="documentation">' . htmlspecialchars( $docs, ENT_QUOTES ) . '</pre>';
 	echo nl2br( htmlspecialchars( $docs, ENT_QUOTES ) );
 }
 
