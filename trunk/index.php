@@ -17,9 +17,9 @@ if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'post' == strtolower( $_SERVER['REQU
 		elseif ( 'head' == strtolower( $_POST['revision'] ) )
 			$head = '/head';
 
-		if ( ctype_digit( $_POST['old_revision'] ) )
+		if ( isset( $_POST['old_revision'] ) && ctype_digit( $_POST['old_revision'] ) )
 			$url .= "$head/$_POST[old_revision]";
-		elseif ( 'prev' == strtolower( $_POST['old_revision'] ) )
+		elseif ( isset( $_POST['old_revision'] ) && 'prev' == strtolower( $_POST['old_revision'] ) )
 			$url .= "$head/prev";
 		elseif ( 'blame' == strtolower( $_POST['view'] ) )
 			$url .= "$head/blame";
